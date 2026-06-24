@@ -1,0 +1,21 @@
+name: Validate
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate-compose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validar docker-compose.infra.yml
+        run: docker compose -f local/docker-compose.infra.yml config --quiet
+
+      - name: Validar docker-compose.full.yml (sintaxe)
+        env:
+          GITHUB_TOKEN: fake-token-for-validation
+        run: docker compose -f local/docker-compose.full.yml config --quiet

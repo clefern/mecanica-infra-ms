@@ -1,0 +1,95 @@
+# Stack completo — zero install (só Docker Desktop necessário).
+# Requer: GITHUB_TOKEN no .env (para build do shared-kernel via GitHub Packages).
+# Requer: repos clonados em /Volumes/Workspace/ (layout padrão do projeto).
+#
+# Uso: docker compose -f docker-compose.full.yml up --build
+
+include:
+  - docker-compose.infra.yml
+
+services:
+
+  os-service:
+    build:
+      context: ../../mecanica-os-service
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: mecanica-os-service
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres-os:5432/os_service
+      DB_USER: ${DB_USER:-mecanica}
+      DB_PASS: ${DB_PASS:-mecanica}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-os:
+        condition: service_healthy
+
+  billing-service:
+    build:
+      context: ../../mecanica-billing-service
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: mecanica-billing-service
+    ports:
+      - "8081:8081"
+    environment:
+      SERVER_PORT: 8081
+      DB_URL: jdbc:postgresql://postgres-billing:5432/billing_service
+      DB_USER: ${DB_USER:-mecanica}
+      DB_PASS: ${DB_PASS:-mecanica}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-billing:
+        condition: service_healthy
+
+  inventory-service:
+    build:
+      context: ../../mecanica-inventory-service
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: mecanica-inventory-service
+    ports:
+      - "8082:8082"
+    environment:
+      SERVER_PORT: 8082
+      DB_URL: jdbc:postgresql://postgres-inventory:5432/inventory_service
+      DB_USER: ${DB_USER:-mecanica}
+      DB_PASS: ${DB_PASS:-mecanica}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      postgres-inventory:
+        condition: service_healthy
+
+  workshop-service:
+    build:
+      context: ../../mecanica-workshop-service
+      args:
+        GITHUB_TOKEN: ${GITHUB_TOKEN}
+    container_name: mecanica-workshop-service
+    ports:
+      - "8083:8083"
+    environment:
+      SERVER_PORT: 8083
+      MONGODB_URI: mongodb://mongodb:27017/workshop_service
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy

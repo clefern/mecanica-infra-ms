@@ -1,0 +1,88 @@
+services:
+
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    container_name: mecanica-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-os:
+    image: postgres:16-alpine
+    container_name: mecanica-postgres-os
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: os_service
+      POSTGRES_USER: ${DB_USER:-mecanica}
+      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
+    volumes:
+      - postgres-os-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d os_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-billing:
+    image: postgres:16-alpine
+    container_name: mecanica-postgres-billing
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: billing_service
+      POSTGRES_USER: ${DB_USER:-mecanica}
+      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
+    volumes:
+      - postgres-billing-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d billing_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-inventory:
+    image: postgres:16-alpine
+    container_name: mecanica-postgres-inventory
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: inventory_service
+      POSTGRES_USER: ${DB_USER:-mecanica}
+      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
+    volumes:
+      - postgres-inventory-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d inventory_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7-jammy
+    container_name: mecanica-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: workshop_service
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-os-data:
+  postgres-billing-data:
+  postgres-inventory-data:
+  mongodb-data:
