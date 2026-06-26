@@ -46,6 +46,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+      MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-TEST-placeholder-token}
     depends_on:
       rabbitmq:
         condition: service_healthy
