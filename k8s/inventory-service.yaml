@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-service
+  namespace: mecanica-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-service
+  template:
+    metadata:
+      labels:
+        app: inventory-service
+    spec:
+      containers:
+        - name: inventory-service
+          image: placeholder:latest
+          ports:
+            - containerPort: 8082
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            initialDelaySeconds: 90
+            periodSeconds: 15
+          env:
+            - name: SERVER_PORT
+              value: "8082"
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-service-secret
+                  key: db-url
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: db-pass
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-host
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-user
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-pass
+            - name: SECURITY_JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: jwt-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-service
+  namespace: mecanica-ms
+spec:
+  selector:
+    app: inventory-service
+  ports:
+    - port: 80
+      targetPort: 8082
+  type: ClusterIP
