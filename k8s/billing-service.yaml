@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: billing-service
+  namespace: mecanica-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: billing-service
+  template:
+    metadata:
+      labels:
+        app: billing-service
+    spec:
+      containers:
+        - name: billing-service
+          image: placeholder:latest
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8081
+            initialDelaySeconds: 90
+            periodSeconds: 15
+          env:
+            - name: SERVER_PORT
+              value: "8081"
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: billing-service-secret
+                  key: db-url
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: db-user
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: db-pass
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-host
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-user
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-pass
+            - name: SECURITY_JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: jwt-secret
+            - name: MP_ACCESS_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: billing-service-secret
+                  key: mp-access-token
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: billing-service
+  namespace: mecanica-ms
+spec:
+  selector:
+    app: billing-service
+  ports:
+    - port: 80
+      targetPort: 8081
+  type: ClusterIP

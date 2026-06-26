@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workshop-service
+  namespace: mecanica-ms
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workshop-service
+  template:
+    metadata:
+      labels:
+        app: workshop-service
+    spec:
+      containers:
+        - name: workshop-service
+          image: placeholder:latest
+          ports:
+            - containerPort: 8083
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8083
+            initialDelaySeconds: 60
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8083
+            initialDelaySeconds: 90
+            periodSeconds: 15
+          env:
+            - name: SERVER_PORT
+              value: "8083"
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: workshop-service-secret
+                  key: mongodb-uri
+            - name: RABBITMQ_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-host
+            - name: RABBITMQ_USER
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-user
+            - name: RABBITMQ_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: rabbitmq-pass
+            - name: SECURITY_JWT_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ms-shared-secret
+                  key: jwt-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: workshop-service
+  namespace: mecanica-ms
+spec:
+  selector:
+    app: workshop-service
+  ports:
+    - port: 80
+      targetPort: 8083
+  type: ClusterIP
