@@ -16,6 +16,7 @@ RMQ_USER=mecanica
 RMQ_PASS=<rabbitmq-password>
 JWT_SECRET=<security-jwt-secret-key>
 MP_TOKEN=<mercadopago-access-token>
+NR_LICENSE_KEY=<new-relic-license-key>    # obter em one.newrelic.com/api-keys
 
 kubectl create secret generic ms-shared-secret \
   --namespace "$NAMESPACE" \
@@ -42,5 +43,9 @@ kubectl create secret generic inventory-service-secret \
 kubectl create secret generic workshop-service-secret \
   --namespace "$NAMESPACE" \
   --from-literal=mongodb-uri="mongodb://$RDS_HOST:27017/workshop_service"
+
+kubectl create secret generic nr-secret \
+  --namespace "$NAMESPACE" \
+  --from-literal=license-key="$NR_LICENSE_KEY"
 
 echo "Secrets criados em namespace $NAMESPACE."

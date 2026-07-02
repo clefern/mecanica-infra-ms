@@ -80,6 +80,16 @@ spec:
                 secretKeyRef:
                   name: billing-service-secret
                   key: mp-access-token
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nr-secret
+                  key: license-key
+                  optional: true
+            - name: NEW_RELIC_APP_NAME
+              value: mecanica-billing-service
+            - name: NEW_RELIC_LOG_LEVEL
+              value: info
 ---
 apiVersion: v1
 kind: Service

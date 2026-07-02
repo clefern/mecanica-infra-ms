@@ -26,6 +26,10 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
       SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
+      NEW_RELIC_AGENT_ENABLED: "false"
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
+      NEW_RELIC_APP_NAME: mecanica-os-service
+      NEW_RELIC_LOG_LEVEL: info
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.os-service.rule=PathPrefix(`/api/auth`) || PathPrefix(`/api/ordens-servico`)"
@@ -55,6 +59,10 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
       MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-TEST-placeholder-token}
       SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
+      NEW_RELIC_AGENT_ENABLED: "false"
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
+      NEW_RELIC_APP_NAME: mecanica-billing-service
+      NEW_RELIC_LOG_LEVEL: info
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.billing-service.rule=PathPrefix(`/api/billing`)"
@@ -83,6 +91,10 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
       SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
+      NEW_RELIC_AGENT_ENABLED: "false"
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
+      NEW_RELIC_APP_NAME: mecanica-inventory-service
+      NEW_RELIC_LOG_LEVEL: info
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.inventory-service.rule=PathPrefix(`/api/estoque`)"
@@ -109,6 +121,10 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
       SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
+      NEW_RELIC_AGENT_ENABLED: "false"
+      NEW_RELIC_LICENSE_KEY: ${NEW_RELIC_LICENSE_KEY:-}
+      NEW_RELIC_APP_NAME: mecanica-workshop-service
+      NEW_RELIC_LOG_LEVEL: info
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.workshop-service.rule=PathPrefix(`/api/execucoes`)"

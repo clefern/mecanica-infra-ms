@@ -73,6 +73,16 @@ spec:
                 secretKeyRef:
                   name: ms-shared-secret
                   key: jwt-secret
+            - name: NEW_RELIC_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: nr-secret
+                  key: license-key
+                  optional: true
+            - name: NEW_RELIC_APP_NAME
+              value: mecanica-os-service
+            - name: NEW_RELIC_LOG_LEVEL
+              value: info
 ---
 apiVersion: v1
 kind: Service
