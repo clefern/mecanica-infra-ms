@@ -41,15 +41,14 @@ AUTH="Authorization: Bearer $TOKEN"
 
 # ─── 2. Criar OS ─────────────────────────────────────────────────────────────
 info "2. Criando Ordem de Serviço..."
-OS=$(curl -sf -X POST "$OS_URL/api/ordens" \
+OS=$(curl -sf -X POST "$OS_URL/api/ordens-servico" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d '{
     "clienteId": "00000000-0000-0000-0000-000000000010",
     "veiculoId": "00000000-0000-0000-0000-000000000020",
-    "descricaoProblema": "Smoke test automatizado",
-    "prioridade": "MEDIA"
-  }') || fail "POST /api/ordens falhou"
+    "mecanicoId": "00000000-0000-0000-0000-000000000002"
+  }') || fail "POST /api/ordens-servico falhou"
 
 OS_ID=$(echo "$OS" | jq -r '.id')
 OS_STATUS=$(echo "$OS" | jq -r '.status')
@@ -58,41 +57,41 @@ pass "OS criada — id=$OS_ID status=$OS_STATUS"
 
 # ─── 3. Adicionar item ────────────────────────────────────────────────────────
 info "3. Adicionando item à OS..."
-curl -sf -X POST "$OS_URL/api/ordens/$OS_ID/itens" \
+curl -sf -X POST "$OS_URL/api/ordens-servico/$OS_ID/itens" \
   -H "Content-Type: application/json" \
   -H "$AUTH" \
   -d '{
-    "tipo": "PECA",
     "referenciaId": "10000000-0000-0000-0000-000000000001",
+    "tipo": "PECA",
     "descricao": "Filtro de Óleo",
-    "quantidade": 1,
-    "valorUnitario": 45.90
-  }' > /dev/null || fail "POST /api/ordens/$OS_ID/itens falhou"
+    "valorUnitario": 45.90,
+    "quantidade": 1
+  }' > /dev/null || fail "POST /api/ordens-servico/$OS_ID/itens falhou"
 pass "Item adicionado"
 
 # ─── 4. Iniciar diagnóstico ───────────────────────────────────────────────────
 info "4. Iniciando diagnóstico..."
-curl -sf -X POST "$OS_URL/api/ordens/$OS_ID/diagnostico" \
-  -H "$AUTH" > /dev/null || fail "POST /api/ordens/$OS_ID/diagnostico falhou"
+curl -sf -X PUT "$OS_URL/api/ordens-servico/$OS_ID/iniciar-diagnostico" \
+  -H "$AUTH" > /dev/null || fail "PUT /api/ordens-servico/$OS_ID/iniciar-diagnostico falhou"
 pass "Diagnóstico iniciado"
 
 # ─── 5. Emitir orçamento (dispara Saga) ──────────────────────────────────────
 info "5. Emitindo orçamento (dispara Saga)..."
-curl -sf -X POST "$OS_URL/api/ordens/$OS_ID/orcamento" \
-  -H "$AUTH" > /dev/null || fail "POST /api/ordens/$OS_ID/orcamento falhou"
+curl -sf -X PUT "$OS_URL/api/ordens-servico/$OS_ID/emitir-orcamento" \
+  -H "$AUTH" > /dev/null || fail "PUT /api/ordens-servico/$OS_ID/emitir-orcamento falhou"
 pass "Orçamento emitido — Saga iniciada"
 
 # ─── 6. Aguardar orçamento no billing ────────────────────────────────────────
-info "6. Aguardando billing-service criar orçamento (max 15s)..."
+info "6. Aguardando billing-service criar orçamento (max 20s)..."
 ORC_ID=""
-for i in $(seq 1 15); do
+for i in $(seq 1 20); do
   ORC_ID=$(curl -sf "$BILLING_URL/api/billing/orcamentos?page=0&size=50" \
     -H "$AUTH" | jq -r --arg osid "$OS_ID" \
     '.content[] | select(.osId == $osid) | .id' 2>/dev/null | head -1)
   [ -n "$ORC_ID" ] && break
   sleep 1
 done
-[ -n "$ORC_ID" ] || fail "Orçamento não criado no billing-service em 15s — verifique os logs do billing-service"
+[ -n "$ORC_ID" ] || fail "Orçamento não criado no billing-service em 20s — verifique os logs"
 pass "Orçamento criado — orcamentoId=$ORC_ID"
 
 # ─── 7. Simular pagamento aprovado ───────────────────────────────────────────
@@ -107,7 +106,7 @@ pass "Pagamento simulado"
 info "8. Aguardando Saga finalizar OS (max 30s)..."
 FINAL_STATUS=""
 for i in $(seq 1 30); do
-  FINAL_STATUS=$(curl -sf "$OS_URL/api/ordens/$OS_ID" \
+  FINAL_STATUS=$(curl -sf "$OS_URL/api/ordens-servico/$OS_ID" \
     -H "$AUTH" | jq -r '.status' 2>/dev/null)
   [ "$FINAL_STATUS" = "ENTREGUE" ] && break
   sleep 1
@@ -120,5 +119,5 @@ if [ "$FINAL_STATUS" = "ENTREGUE" ]; then
   echo -e "${GREEN} SMOKE TEST PASSOU — Saga completa OK  ${NC}"
   echo -e "${GREEN}========================================${NC}"
 else
-  fail "OS não finalizou em 30s — status atual=$FINAL_STATUS. Verifique logs: docker compose logs -f"
+  fail "OS não finalizou em 30s — status atual=$FINAL_STATUS. Verifique: docker compose logs -f"
 fi
