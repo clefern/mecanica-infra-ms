@@ -1,0 +1,39 @@
+mongodb:
+  auth:
+    enabled: false
+
+  persistence:
+    enabled: true
+    size: 2Gi
+    storageClass: ""
+
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  extraFlags: "--wiredTigerCacheSizeGB=0.5"
+
+  initdbScripts:
+    init-workshop.js: |
+      db = db.getSiblingDB('workshop_service');
+      db.createCollection('execucoes');
+      db.createCollection('mecanicos');
+      db.createCollection('processed_commands');
+
+  service:
+    type: ClusterIP
+    port: 27017
+
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 60
+    periodSeconds: 20

@@ -1,0 +1,10 @@
+apiVersion: v2
+name: mecanica-mongodb
+description: MongoDB para workshop-service — Mecânica API Fase 4 (Grupo 14SOAT)
+type: application
+version: 0.1.0
+appVersion: "7"
+dependencies:
+  - name: mongodb
+    version: "16.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
