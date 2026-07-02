@@ -19,16 +19,16 @@ Stack completa rodando localmente com um único comando. Sem Java instalado, sem
 O `docker-compose.full.yml` referencia os outros repos com caminho relativo `../../mecanica-*`. Todos devem estar clonados na **mesma pasta pai**:
 
 ```
-workspace/
-├── mecanica-infra-ms/          ← este repo
+fiap-tc-mecanica/               ← workspace raiz (symlinks)
+├── ms-infra-ms/                ← este repo
 │   └── local/
 │       ├── .env.example
 │       ├── docker-compose.full.yml
 │       └── docker-compose.infra.yml
-├── mecanica-os-service/
-├── mecanica-billing-service/
-├── mecanica-inventory-service/
-└── mecanica-workshop-service/
+├── ms-os-service/
+├── ms-billing-service/
+├── ms-inventory-service/
+└── ms-workshop-service/
 ```
 
 ---
