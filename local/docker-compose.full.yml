@@ -24,6 +24,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+      SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -47,6 +48,7 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
       MP_ACCESS_TOKEN: ${MP_ACCESS_TOKEN:-TEST-placeholder-token}
+      SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -69,6 +71,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+      SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -89,6 +92,7 @@ services:
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+      SECURITY_JWT_SECRET_KEY: ${SECURITY_JWT_SECRET_KEY:-ZGV2U2VjcmV0S2V5Rm9yTG9jYWxEZXZlbG9wbWVudE9ubHkzMkJ5dGVz}
     depends_on:
       rabbitmq:
         condition: service_healthy
