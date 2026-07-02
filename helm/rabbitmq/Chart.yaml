@@ -1,0 +1,10 @@
+apiVersion: v2
+name: mecanica-rabbitmq
+description: RabbitMQ para Mecânica API — Fase 4 (Grupo 14SOAT)
+type: application
+version: 0.1.0
+appVersion: "3.13"
+dependencies:
+  - name: rabbitmq
+    version: "14.x.x"
+    repository: "https://charts.bitnami.com/bitnami"

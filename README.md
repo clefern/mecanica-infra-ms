@@ -8,20 +8,22 @@ Infraestrutura dos microsserviços da **Fase 4 — Mecânica API** (Grupo 14SOAT
 mecanica-fiap/  ← docker-compose para desenvolvimento local (leia mecanica-fiap/README.md)
 k8s/            ← manifestos Kubernetes (Namespace, Deployments, Services, secrets-setup.sh)
 helm/           ← Helm charts: RabbitMQ, MongoDB (a preencher — Frente B)
+scripts/        ← smoke-test.sh (valida Saga completa end-to-end)
 ```
 
 ## Desenvolvimento local
 
-Para rodar a stack completa localmente (4 MS + RabbitMQ + 3×PostgreSQL + MongoDB + Mailhog) e consumir as APIs via Insomnia, siga o guia detalhado:
+Para rodar a stack completa localmente (4 MS + Traefik + RabbitMQ + 3×PostgreSQL + MongoDB + ferramentas de UI) e consumir as APIs via Insomnia, siga o guia detalhado:
 
 **[→ mecanica-fiap/README.md](mecanica-fiap/README.md)**
 
 TL;DR:
 ```bash
 cd mecanica-fiap/
-cp .env.example .env          # editar: GITHUB_TOKEN obrigatório
+cp .env.example .env          # editar: GITHUB_TOKEN obrigatório; DOCKER_SOCK no macOS
 docker compose -f docker-compose.full.yml up --build
-# POST http://localhost:8080/api/auth/login  {"email":"admin@mecanica.com","password":"123456"}
+# Ponto único de entrada: http://localhost
+# Login: POST http://localhost/api/auth/login  {"email":"admin@mecanica.com","password":"123456"}
 ```
 
 ## K8s — Deploy no cluster EKS
@@ -43,20 +45,24 @@ Para atualizar a imagem de um MS, use o `cd.yml` (`workflow_dispatch`) no reposi
 
 ## Portas locais
 
-| Serviço              | Porta  | UI / endpoint         |
-|----------------------|--------|-----------------------|
-| os-service           | 8080   | /swagger-ui.html      |
-| billing-service      | 8081   | /swagger-ui.html      |
-| inventory-service    | 8082   | /swagger-ui.html      |
-| workshop-service     | 8083   | /swagger-ui.html      |
-| RabbitMQ AMQP        | 5672   | —                     |
-| RabbitMQ Management  | 15672  | http://localhost:15672 |
-| PostgreSQL os        | 5432   | —                     |
-| PostgreSQL billing   | 5433   | —                     |
-| PostgreSQL inventory | 5434   | —                     |
-| MongoDB              | 27017  | —                     |
-| Mailhog SMTP         | 1025   | —                     |
-| Mailhog Web UI       | 8025   | http://localhost:8025  |
+| Serviço | Porta | UI / endpoint |
+|---------|-------|---------------|
+| **Gateway (Traefik)** | **80** | **Ponto único de entrada — todos os MS** |
+| Traefik dashboard | 8099 | http://localhost:8099 |
+| os-service | 8080 | /swagger-ui.html |
+| billing-service | 8081 | /swagger-ui.html |
+| inventory-service | 8082 | /swagger-ui.html |
+| workshop-service | 8083 | /swagger-ui.html |
+| RabbitMQ AMQP | 5672 | — |
+| RabbitMQ Management | 15672 | http://localhost:15672 |
+| PostgreSQL os | 5432 | — |
+| PostgreSQL billing | 5433 | — |
+| PostgreSQL inventory | 5434 | — |
+| MongoDB | 27017 | — |
+| Adminer (Postgres UI) | 9090 | http://localhost:9090 |
+| mongo-express (MongoDB UI) | 8084 | http://localhost:8084 |
+| Mailhog SMTP | 1025 | — |
+| Mailhog Web UI | 8025 | http://localhost:8025 |
 
 ## Repositórios do grupo
 
