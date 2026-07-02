@@ -21,7 +21,7 @@ O `docker-compose.full.yml` referencia os outros repos com caminho relativo `../
 ```
 fiap-tc-mecanica/               ← workspace raiz (symlinks)
 ├── ms-infra-ms/                ← este repo
-│   └── local/
+│   └── mecanica-fiap/
 │       ├── .env.example
 │       ├── docker-compose.full.yml
 │       └── docker-compose.infra.yml

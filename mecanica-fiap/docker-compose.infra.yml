@@ -66,9 +66,10 @@ services:
       timeout: 5s
       retries: 5
 
-  mongodb:
+  mongodb-workshop:
     image: mongo:7-jammy
-    container_name: mecanica-mongodb
+    container_name: mecanica-mongodb-workshop
+    command: ["--wiredTigerCacheSizeGB", "0.25"]
     ports:
       - "27017:27017"
     environment:
@@ -81,6 +82,14 @@ services:
       timeout: 5s
       retries: 5
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    platform: linux/amd64
+    container_name: mecanica-mailhog
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
   adminer:
     image: adminer:latest
     container_name: mecanica-adminer
@@ -90,6 +99,18 @@ services:
       ADMINER_DEFAULT_SERVER: postgres-os
     depends_on:
       postgres-os:
+        condition: service_healthy
+
+  mongo-express:
+    image: mongo-express:latest
+    container_name: mecanica-mongo-express
+    ports:
+      - "8084:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongodb-workshop:27017/
+      ME_CONFIG_BASICAUTH: "false"
+    depends_on:
+      mongodb-workshop:
         condition: service_healthy
 
 volumes:

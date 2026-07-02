@@ -5,20 +5,20 @@ Infraestrutura dos microsserviços da **Fase 4 — Mecânica API** (Grupo 14SOAT
 ## Estrutura
 
 ```
-local/          ← docker-compose para desenvolvimento local (leia local/README.md)
+mecanica-fiap/  ← docker-compose para desenvolvimento local (leia mecanica-fiap/README.md)
 k8s/            ← manifestos Kubernetes (Namespace, Deployments, Services, secrets-setup.sh)
 helm/           ← Helm charts: RabbitMQ, MongoDB (a preencher — Frente B)
 ```
 
 ## Desenvolvimento local
 
-Para rodar a stack completa localmente (4 MS + RabbitMQ + 3×PostgreSQL + MongoDB) e consumir as APIs via Insomnia, siga o guia detalhado:
+Para rodar a stack completa localmente (4 MS + RabbitMQ + 3×PostgreSQL + MongoDB + Mailhog) e consumir as APIs via Insomnia, siga o guia detalhado:
 
-**[→ local/README.md](local/README.md)**
+**[→ mecanica-fiap/README.md](mecanica-fiap/README.md)**
 
 TL;DR:
 ```bash
-cd local/
+cd mecanica-fiap/
 cp .env.example .env          # editar: GITHUB_TOKEN obrigatório
 docker compose -f docker-compose.full.yml up --build
 # POST http://localhost:8080/api/auth/login  {"email":"admin@mecanica.com","password":"123456"}
@@ -55,6 +55,8 @@ Para atualizar a imagem de um MS, use o `cd.yml` (`workflow_dispatch`) no reposi
 | PostgreSQL billing   | 5433   | —                     |
 | PostgreSQL inventory | 5434   | —                     |
 | MongoDB              | 27017  | —                     |
+| Mailhog SMTP         | 1025   | —                     |
+| Mailhog Web UI       | 8025   | http://localhost:8025  |
 
 ## Repositórios do grupo
 
