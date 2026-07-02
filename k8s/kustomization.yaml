@@ -6,3 +6,4 @@ resources:
   - billing-service.yaml
   - inventory-service.yaml
   - workshop-service.yaml
+  - ms-ingressroute.yaml
