@@ -1,0 +1,26 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: mecanica-ms-gateway
+  namespace: mecanica-ms
+  labels:
+    tier: gateway
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: PathPrefix(`/api/auth`)
+      priority: 300
+      services:
+        - name: os-service
+          port: 80
+    - match: PathPrefix(`/api/ordens`)
+      priority: 200
+      services:
+        - name: os-service
+          port: 80
+    - match: PathPrefix(`/api/billing`)
+      priority: 100
+      services:
+        - name: billing-service
+          port: 80
