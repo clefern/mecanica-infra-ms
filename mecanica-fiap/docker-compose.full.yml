@@ -19,7 +19,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DB_URL: jdbc:postgresql://postgres-os:5432/os_service
+      DB_URL: jdbc:postgresql://os-postgres:5432/os_service
       DB_USER: ${DB_USER:-mecanica}
       DB_PASS: ${DB_PASS:-mecanica}
       RABBITMQ_HOST: rabbitmq
@@ -38,7 +38,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      postgres-os:
+      os-postgres:
         condition: service_healthy
 
   billing-service:
@@ -51,7 +51,7 @@ services:
       - "8081:8081"
     environment:
       SERVER_PORT: 8081
-      DB_URL: jdbc:postgresql://postgres-billing:5432/billing_service
+      DB_URL: jdbc:postgresql://billing-postgres:5432/billing_service
       DB_USER: ${DB_USER:-mecanica}
       DB_PASS: ${DB_PASS:-mecanica}
       RABBITMQ_HOST: rabbitmq
@@ -71,7 +71,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      postgres-billing:
+      billing-postgres:
         condition: service_healthy
 
   inventory-service:
@@ -84,7 +84,7 @@ services:
       - "8082:8082"
     environment:
       SERVER_PORT: 8082
-      DB_URL: jdbc:postgresql://postgres-inventory:5432/inventory_service
+      DB_URL: jdbc:postgresql://inventory-postgres:5432/inventory_service
       DB_USER: ${DB_USER:-mecanica}
       DB_PASS: ${DB_PASS:-mecanica}
       RABBITMQ_HOST: rabbitmq
@@ -103,7 +103,7 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      postgres-inventory:
+      inventory-postgres:
         condition: service_healthy
 
   workshop-service:
@@ -116,7 +116,7 @@ services:
       - "8083:8083"
     environment:
       SERVER_PORT: 8083
-      MONGODB_URI: mongodb://mongodb-workshop:27017/workshop_service
+      MONGODB_URI: mongodb://workshop-mongodb:27017/workshop_service
       RABBITMQ_HOST: rabbitmq
       RABBITMQ_USER: ${RABBITMQ_USER:-guest}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
@@ -133,5 +133,5 @@ services:
     depends_on:
       rabbitmq:
         condition: service_healthy
-      mongodb-workshop:
+      workshop-mongodb:
         condition: service_healthy

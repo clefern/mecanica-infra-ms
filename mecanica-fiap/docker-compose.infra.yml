@@ -1,5 +1,7 @@
 services:
 
+  # ── Infra compartilhada ───────────────────────────────────────────────────
+
   traefik:
     image: traefik:v2.11
     container_name: mecanica-traefik
@@ -29,73 +31,6 @@ services:
       timeout: 5s
       retries: 5
 
-  postgres-os:
-    image: postgres:16-alpine
-    container_name: mecanica-postgres-os
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_DB: os_service
-      POSTGRES_USER: ${DB_USER:-mecanica}
-      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
-    volumes:
-      - postgres-os-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d os_service"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-billing:
-    image: postgres:16-alpine
-    container_name: mecanica-postgres-billing
-    ports:
-      - "5433:5432"
-    environment:
-      POSTGRES_DB: billing_service
-      POSTGRES_USER: ${DB_USER:-mecanica}
-      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
-    volumes:
-      - postgres-billing-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d billing_service"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-inventory:
-    image: postgres:16-alpine
-    container_name: mecanica-postgres-inventory
-    ports:
-      - "5434:5432"
-    environment:
-      POSTGRES_DB: inventory_service
-      POSTGRES_USER: ${DB_USER:-mecanica}
-      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
-    volumes:
-      - postgres-inventory-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d inventory_service"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  mongodb-workshop:
-    image: mongo:7-jammy
-    container_name: mecanica-mongodb-workshop
-    command: ["--wiredTigerCacheSizeGB", "0.25"]
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: workshop_service
-    volumes:
-      - mongodb-data:/data/db
-    healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   mailhog:
     image: mailhog/mailhog:latest
     platform: linux/amd64
@@ -110,9 +45,9 @@ services:
     ports:
       - "9090:8080"
     environment:
-      ADMINER_DEFAULT_SERVER: postgres-os
+      ADMINER_DEFAULT_SERVER: os-postgres
     depends_on:
-      postgres-os:
+      os-postgres:
         condition: service_healthy
 
   mongo-express:
@@ -121,11 +56,80 @@ services:
     ports:
       - "8084:8081"
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://mongodb-workshop:27017/
+      ME_CONFIG_MONGODB_URL: mongodb://workshop-mongodb:27017/
       ME_CONFIG_BASICAUTH: "false"
     depends_on:
-      mongodb-workshop:
+      workshop-mongodb:
         condition: service_healthy
+
+  # ── Bancos de dados (um por serviço) ─────────────────────────────────────
+
+  os-postgres:
+    image: postgres:16-alpine
+    container_name: mecanica-os-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: os_service
+      POSTGRES_USER: ${DB_USER:-mecanica}
+      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
+    volumes:
+      - postgres-os-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d os_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  billing-postgres:
+    image: postgres:16-alpine
+    container_name: mecanica-billing-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: billing_service
+      POSTGRES_USER: ${DB_USER:-mecanica}
+      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
+    volumes:
+      - postgres-billing-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d billing_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  inventory-postgres:
+    image: postgres:16-alpine
+    container_name: mecanica-inventory-postgres
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: inventory_service
+      POSTGRES_USER: ${DB_USER:-mecanica}
+      POSTGRES_PASSWORD: ${DB_PASS:-mecanica}
+    volumes:
+      - postgres-inventory-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-mecanica} -d inventory_service"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  workshop-mongodb:
+    image: mongo:7-jammy
+    container_name: mecanica-workshop-mongodb
+    command: ["--wiredTigerCacheSizeGB", "0.25"]
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: workshop_service
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   postgres-os-data:
