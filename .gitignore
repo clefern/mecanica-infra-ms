@@ -1,2 +1,10 @@
 local/.env
 .DS_Store
+
+# Variáveis de ambiente (contêm segredos — nunca versionar; use .env.example como template)
+.env
+**/.env
+
+# Overrides locais de compose (específicos da máquina, não versionar)
+docker-compose.local.yml
+**/docker-compose.local.yml
