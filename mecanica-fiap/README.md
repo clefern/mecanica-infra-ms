@@ -385,4 +385,33 @@ docker compose -f docker-compose.full.yml down -v
 → No macOS, verifique se `DOCKER_SOCK` está configurado no `.env` apontando para `~/.docker/run/docker.sock`. Confirme com: `docker logs mecanica-traefik`.
 
 **Porta já em uso**
-→ Verifique processos locais: `lsof -i :<porta>`. Pare o processo ou ajuste as portas no `docker-compose.full.yml`.
+→ Verifique quem ocupa a porta: `lsof -i :<porta>` (processo local) ou `docker ps --filter publish=<porta>` (outro container). Se for outro projeto que você não quer parar, **não edite o `docker-compose.full.yml`** — use um override local (veja abaixo).
+
+### Overrides locais (específicos da sua máquina)
+
+Ajustes que valem só para o seu ambiente (ex.: remapear uma porta que outro projeto já ocupa) vão em um arquivo `docker-compose.local.yml` **não versionado** (já está no `.gitignore`).
+
+Exemplo — a porta `5434` do `inventory-postgres` está ocupada por outro projeto, então remapeamos para `5435`. Use a tag `!override` para **substituir** a lista de portas herdada (sem ela, o Compose concatena e o conflito permanece):
+
+```yaml
+# docker-compose.local.yml
+services:
+  inventory-postgres:
+    ports: !override
+      - "5435:5432"
+```
+
+Para o Compose mesclar o override, ele precisa ser passado **depois** do full:
+
+```bash
+docker compose -f docker-compose.full.yml -f docker-compose.local.yml up -d
+```
+
+**Dica (recomendado):** para não precisar lembrar do `-f` toda vez, defina `COMPOSE_FILE` no seu `.env` (também não versionado). Aí um `docker compose up -d` simples já carrega os dois arquivos:
+
+```bash
+# .env
+COMPOSE_FILE=docker-compose.full.yml:docker-compose.local.yml
+```
+
+> O remapeamento só afeta o acesso direto ao banco pelo host; a comunicação entre serviços usa a rede interna (`inventory-postgres:5432`) e não muda.

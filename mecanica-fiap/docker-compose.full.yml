@@ -12,7 +12,7 @@ services:
 
   os-service:
     build:
-      context: ../../ms-os-service
+      context: ../../mecanica-os-service
       args:
         GITHUB_TOKEN: ${GITHUB_TOKEN}
     container_name: mecanica-os-service
@@ -43,7 +43,7 @@ services:
 
   billing-service:
     build:
-      context: ../../ms-billing-service
+      context: ../../mecanica-billing-service
       args:
         GITHUB_TOKEN: ${GITHUB_TOKEN}
     container_name: mecanica-billing-service
@@ -76,7 +76,7 @@ services:
 
   inventory-service:
     build:
-      context: ../../ms-inventory-service
+      context: ../../mecanica-inventory-service
       args:
         GITHUB_TOKEN: ${GITHUB_TOKEN}
     container_name: mecanica-inventory-service
@@ -108,7 +108,7 @@ services:
 
   workshop-service:
     build:
-      context: ../../ms-workshop-service
+      context: ../../mecanica-workshop-service
       args:
         GITHUB_TOKEN: ${GITHUB_TOKEN}
     container_name: mecanica-workshop-service
