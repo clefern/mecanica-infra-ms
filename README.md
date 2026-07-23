@@ -28,18 +28,27 @@ docker compose -f docker-compose.full.yml up --build
 
 ## K8s — Deploy no cluster EKS
 
-Pré-requisitos: `kubectl` configurado, cluster provisionado via `infra-k8s`, secrets criados.
+Pré-requisitos: `kubectl` configurado, cluster provisionado via `fiap-tc-mecanica-infra-k8s`, RDS via `fiap-tc-mecanica-infra-db`, RabbitMQ/MongoDB in-cluster (ver `helm/`).
 
 ```bash
-# 1. Criar K8s Secrets (uma vez por cluster)
-bash k8s/secrets-setup.sh
-
-# 2. Aplicar manifests
+# 1. Aplicar manifests (namespace, deployments, services, ingressroute)
 kubectl apply -k k8s/
 
-# 3. Verificar pods
+# 2. Criar K8s Secrets (editar os <placeholder> antes)
+bash k8s/secrets-setup.sh
+
+# 3. Criar os bancos por microsserviço no RDS (idempotente)
+kubectl apply -f k8s/db-init-job.yaml
+kubectl -n mecanica-ms wait --for=condition=complete job/db-init --timeout=120s
+
+# 4. Verificar pods
 kubectl get pods -n mecanica-ms
 ```
+
+**Bancos de dados** (Fase 4 — cada MS com o seu): os/billing/inventory usam bancos
+lógicos isolados (`os_service`, `billing_service`, `inventory_service`) numa única
+instância RDS PostgreSQL (barato p/ AWS Academy); workshop usa MongoDB in-cluster.
+Detalhes em [`k8s/README.md`](k8s/README.md).
 
 Para atualizar a imagem de um MS, use o `cd.yml` (`workflow_dispatch`) no repositório do serviço.
 

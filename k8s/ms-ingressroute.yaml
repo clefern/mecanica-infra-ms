@@ -14,7 +14,7 @@ spec:
       services:
         - name: os-service
           port: 80
-    - match: PathPrefix(`/api/ordens`)
+    - match: PathPrefix(`/api/ordens-servico`)
       priority: 200
       services:
         - name: os-service
@@ -23,4 +23,14 @@ spec:
       priority: 100
       services:
         - name: billing-service
+          port: 80
+    - match: PathPrefix(`/api/estoque`)
+      priority: 100
+      services:
+        - name: inventory-service
+          port: 80
+    - match: PathPrefix(`/api/execucoes`)
+      priority: 100
+      services:
+        - name: workshop-service
           port: 80

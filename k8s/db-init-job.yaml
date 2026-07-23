@@ -1,0 +1,77 @@
+# Bootstrap dos bancos por microsserviço no RDS PostgreSQL compartilhado.
+#
+# Por que um Job (e não Terraform):
+#   O RDS fica em subnets privadas (publicly_accessible = false), então o runner
+#   do Terraform (laptop/CI, fora da VPC) não consegue conectar para rodar o
+#   provider postgresql. Este Job roda DENTRO do cluster, na mesma VPC, e alcança
+#   o RDS sem expô-lo publicamente.
+#
+# Estratégia "cada MS com seu próprio banco de dados": uma instância RDS única
+# (barata p/ AWS Academy) hospedando 3 bancos lógicos isolados — os_service,
+# billing_service, inventory_service. O workshop-service usa MongoDB in-cluster.
+#
+# É idempotente: só cria o banco se ainda não existir. Rode após o RDS estar
+# disponível e os secrets criados (k8s/secrets-setup.sh):
+#
+#   kubectl apply -f k8s/db-init-job.yaml
+#   kubectl -n mecanica-ms wait --for=condition=complete job/db-init --timeout=120s
+#
+# Para re-executar (Jobs são imutáveis): kubectl -n mecanica-ms delete job db-init
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-init
+  namespace: mecanica-ms
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: db-init
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: db-init
+          image: postgres:16-alpine
+          env:
+            - name: PGHOST
+              valueFrom:
+                secretKeyRef:
+                  name: rds-admin-secret
+                  key: host
+            - name: PGPORT
+              valueFrom:
+                secretKeyRef:
+                  name: rds-admin-secret
+                  key: port
+            - name: PGUSER
+              valueFrom:
+                secretKeyRef:
+                  name: rds-admin-secret
+                  key: user
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: rds-admin-secret
+                  key: password
+            # Banco de manutenção usado só para abrir a conexão administrativa.
+            - name: PGDATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: rds-admin-secret
+                  key: maintenance-db
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -eu
+              for db in os_service billing_service inventory_service; do
+                if psql -tAc "SELECT 1 FROM pg_database WHERE datname = '$db'" | grep -q 1; then
+                  echo "[db-init] '$db' já existe — pulando"
+                else
+                  echo "[db-init] criando '$db'"
+                  psql -c "CREATE DATABASE \"$db\""
+                fi
+              done
+              echo "[db-init] concluído"
